@@ -30,12 +30,12 @@ I do not validate the value passed into `setVendorAuthKey` and you can call this
 I've distilled AMC's JSON definitions for movie information down into two main `Codable` model structures. These are `MoviesModel` and `MovieModel`. Movies is JSON container for one or movie elements. The Movie is JSON object that containing all of the properties you might expect when thinking about movie information, included multiple links and URLs to trailer and poster media. For complete details regarding these models, look at the code or visit the [Movies](http://developers.amctheatres.com/Movies) page on AMC's porral. 
 
 #### Fetching Active Movies
-```
+```swift
 func fetchActiveMovies() -> AnyPublisher<MoviesModel, Swift.Error>
 ```
 I don't know what an 'active' movie is; I couldn't find a definition for this on AMC's web site but I assume these are movies that are either currently in theatres or about to be in theatres. You can fetch active movies using the following code.
 
-```
+```swift
 let subscriptions = Set<AnyCancellable>()
 
 AMCAPI.shared.fetchActiveMovies().sink { [weak self] completion in
@@ -48,10 +48,10 @@ AMCAPI.shared.fetchActiveMovies().sink { [weak self] completion in
 .store(in: &subscriptions)
 ```
 #### Fetching Advance Ticket Movies
-```
+```swift
 func fetchAdvanceTicketMovies() -> AnyPublisher<MoviesModel, Swift.Error>
 ```
-```
+```swift
 AMCAPI.shared.fetchAdvanceTicketMovies().sink { [weak self] completion in
   // Handle completion here.
 } receiveValue: { [weak self] model in
@@ -59,7 +59,7 @@ AMCAPI.shared.fetchAdvanceTicketMovies().sink { [weak self] completion in
 }
 ```
 #### Fetching All Movies
-```
+```swift
 AMCAPI.sharedFetchAllMovies(pageNumber: Int = 1, pageSize: Int = 10) -> AnyPublisher<MoviesModel, Swift.Error>
 ```
 After writing the code for this function, I questioned whether or not it was practical and should be included. My thinking is that the common use case is to get a listing of what is currently active or now playing in the threatre. Why would anyone using a convenience app what to list every single movie in AMC's current database? I don't have an answer for that question. However, the function is here and the results can be accessed in pages, as show in the parameter list in this function.
@@ -68,7 +68,7 @@ The resulting model includes the current page and page size as well as the total
 
 Note that omitting any parameters will result in fetching the first page of 10 movie results as show below.
 
-```
+```swift
 AMCAPI.shared.fetchAllMovies().sink { [weak self] completion in
   // Handle completion here.
 } receiveValue: { [weak self] model in
@@ -76,10 +76,10 @@ AMCAPI.shared.fetchAllMovies().sink { [weak self] completion in
 }
 ```
 #### Fetch Coming-Soon Movies
-```
+```swift
 fetchComingSoonMovies(pageNumber: Int = 1, pageSize: Int = 10) -> AnyPublisher<MoviesModel, Swift.Error>
 ```
-```
+```swift
 AMCAPI.shared.fetchComingSoonMovies().sink { [weak self] completion in
   // Handle completion here.
 } receiveValue: { [weak self] model in
@@ -91,10 +91,10 @@ AMCAPI.shared.fetchComingSoonMovies().sink { [weak self] completion in
 func fetchMovie(with id: MovieId) -> AnyPublisher<MovieModel, Swift.Error>
 ```
 #### Fetch Now-Playing Movies
-```
+```swift
 fetchNowPlayingMovies(pageNumber: Int = 1, pageSize: Int = 10) -> AnyPublisher<MoviesModel, Swift.Error>
 ```
-```
+```swift
 AMCAPI.shared.fetchNowPlayingMovies().sink { [weak self] completion in
   // Handle completion here.
 } receiveValue: { [weak self] model in
@@ -114,7 +114,7 @@ In order to create your own API wrappers using the core, do the following:
 
 Step #1: Declare an of enumeration that implements the `HTTPTargetType` protocol. Each enum should be named and parameterized according to the existing underlying API call it is intended to wrap.
  
-```
+```swift
 enum MyAPITarget: HTTPTargetType {
   case firstAPICall(arg1: Int, arg2: String)
   case secondAPICall(arg: [String: Any])
@@ -123,7 +123,7 @@ enum MyAPITarget: HTTPTargetType {
 ```
 Step #2: Create your `Codable` models used for input and output to the various API calls you plan to implement wrappers for.
  
-```
+```swift
 struct MyModel: Codable, Equatable {
   let id: Int
   let name: String
@@ -132,7 +132,7 @@ struct MyModel: Codable, Equatable {
 ```
 Step #3: Create a structure that implements the `HTTPEndpoint` protocol. In this structure you must define type aliases for `Target` and `Model`. The target defines all of the parameters needed to execute the API call and the model defines the returned `Decodable` type that should result from a successful API call. Use the target-type and model created from steps #1 and #2 for these aliases, respectively.
 
-```
+```swift
 struct MyAPIEndpoint: HTTPEndpoint {
   typealias Target = MyAPITarget
   typealias Model = MyModel
@@ -140,7 +140,7 @@ struct MyAPIEndpoint: HTTPEndpoint {
 ```
 Step #4: Create an extension for the enumeration you just declared in step #1 and implement the required protocol stubs for the path and task. Optionally, you can define a set of HTTP headers, as needed, for each API call you are wrapping. Assuming that each API wrapper requires a different path, task, and headers value, you can `switch` on the `enum` to provide those individual values on a per API call basis, as shown below.
 
-```
+```swift
 extension MyAPITarget {
   var path: String {
     switch self {
@@ -175,12 +175,12 @@ extension MyAPITarget {
 ```
 Step #5: You will also need to create the associated endpoint value and make sure it is accessible to your wrapper functions.
 
-```
+```swift
 let myAPIEndpoint = MyAPIEndpoint()
 ```
 Final Step: Invoke your API calls from you wrappers using the `HTTPEndpoint.request` method.
 
-```
+```swift
 func firstAPICall(arg1: Int, arg2: String) -> AnyPublisher<MyModel, Swift.Error> {
   do {
     let publisher = try myAPIEndpoint.request(.firstAPICall(arg1, arg2))
@@ -210,3 +210,6 @@ internal func processPublisherResults<T: Decodable>(_ publisher: URLSession.Data
 
 ## Final Thoughts
 This is all highly experimental for me. Though I doubt it will be useful for anyone else, I couldn't think of a down-side to putting it up on GitHub. I figure in the worst case, I will get valuable feedback regarding better ways to do what I'm trying to do. On the positive side, maybe this code; this exploration, will inspire or help someone else who is also learning Combine or perhaps is new Apple software development and network programming in general.
+
+## License
+AMCAPI is released under an MIT license. See [License.md](https://github.com/StateMachineJunkie/AMCAPI/License.md) for more information.
