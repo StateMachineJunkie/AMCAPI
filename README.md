@@ -212,4 +212,4 @@ internal func processPublisherResults<T: Decodable>(_ publisher: URLSession.Data
 This is all highly experimental for me. Though I doubt it will be useful for anyone else, I couldn't think of a down-side to putting it up on GitHub. I figure in the worst case, I will get valuable feedback regarding better ways to do what I'm trying to do. On the positive side, maybe this code; this exploration, will inspire or help someone else who is also learning Combine or perhaps is new Apple software development and network programming in general.
 
 ## License
-AMCAPI is released under an MIT license. See [License.md](https://github.com/StateMachineJunkie/AMCAPI/License.md) for more information.
+AMCAPI is released under an MIT license. See [License.md](https://github.com/StateMachineJunkie/AMCAPI/blob/main/License.md) for more information.
