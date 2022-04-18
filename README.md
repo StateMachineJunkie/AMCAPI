@@ -9,7 +9,7 @@ When I started contributing to the existing code base for the aforementioned con
 
 First, there are a number of third-party dependencies that are required for even relatively small solutions. It is a lot of extra code to support. I had previously spent two and a half years on this contract, maintaining two major medical apps using this technology, along with Carthage as the dependency manager. Every time Apple released an update to iOS, our build would break an it would take days (sometimes longer) in order to get the product building again. In some cases I would have to fork a third-party library and make the repairs myself.
 
-The second major problem for me was Carthage. Its way of doing things with lipo etc., is slow and proved to be fragile when Apple made changes to Xcode and compiler behavior. This was especially true support for Apple's M1 was rolled out. Carthage became unusable for weeks. There were some workarounds using Xcode config files but it was really frustrating.
+The second major problem for me was Carthage. Its way of doing things with lipo is slow and proved to be fragile when Apple made changes to Xcode and compiler behavior. This was especially the case when support for Apple's M1 was rolled out. Carthage became unusable for weeks. There were some workarounds using Xcode config files but it was really frustrating.   
 
 From this experience, I decided that I wanted to use as few third-party dependencies as possible and that I wanted to use something other than Carthage for dependency management.
 
