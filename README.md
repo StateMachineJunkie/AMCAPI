@@ -16,13 +16,105 @@ From this experience, I decided that I wanted to use as few third-party dependen
 For these reasons, I decided to create my own light version of a Moya-type framework for use with URLSession, leaving out Moya and Alamofire, completely. I also kicked Carthage to the curb and went with Swift Package Manager, which was now mature enough to get the job done. Life is much better here. By using Apple's own technology for reactive programming and dependency management. I have a lot less code to keep in sync with Apple. I expect that SPM, Combine, and SwiftUI will continue to improve with time and I anticipate fewer hassles with more capability with each subsequent release of these technologies.
 
 ## Domain Model
-
 ```mermaid
 classDiagram
 	MoviesModel "1" *-- "1..*" MovieModel: contains
 	ShowtimesModel "1" *-- "1..*" ShowtimeModel: contains
 	TheatresModel "1" *-- "1..*" TheatreModel: contains
 ```
+
+## APICore Design
+```mermaid
+classDiagram
+    class AMCAPI {
+        <<singleton>>
+        String path
+        HTTPTask task
+    }
+
+	class HTTPTargetType {
+		<<protocol>>
+		URL baseURL
+		HTTPHeaders? headers
+		HTTPMethod method
+		String path
+		HTTPTask task
+	}
+	
+	class HTTPEndpoint {
+		<<protocol>>
+		HTTPTargetType Target: associatedtype
+		Decodable Model: associatedtype
+		
+		request(Target target)
+	}
+
+    class MoviesEndpoint {
+        <<AMCAPI extension>>
+        Target MoviesTarget
+        Model MoviesModel
+    }
+
+    class MoviesTarget {
+        <<enum>>
+        getAll(Int pageNumber, Int pageSize) MoviesModel
+        getNowPlaying(Int pageNumber, Int pageSize)  MoviesModel
+        getAdvance() MoviesModel
+        getComingSoon(Int pageNumber, Int pageSize) MoviesModel
+        getById(MovieId id) MoviesModel
+        getSimilarOnDemandById(Int id)
+        getAllActive() MoviesModel
+        getOnDemand() MoviesModel
+        getActive() MoviesModel
+        getBySlug(String slug) MoviesModel
+        getByInternalId(Int id)
+    }
+
+    class ShowtimesEndpoint {
+        <<AMCAPI extension>>
+        Target ShowtimesTarget
+        Model ShowtimesModel
+    }
+
+    class ShowtimesTarget {
+        <<enum>>
+        getById(ShowtimeId id) ShowtimesModel
+        getByDateAndLocation(Date date, Double latittude, Double longitude, [String : Any]? queryParams) ShowtimesModel
+    }
+
+    class TheatresEndpoint {
+        <<AMCAPI extension>>
+        Target TheatresTarget
+        Model TheatresModel
+    }
+
+    class TheatresTarget {
+        <<enum>>
+        getAll(Int pageNumber, Int pageSize) TheatresModel
+        getAllShowtimesForThreatre(ThreatreId id) TheatresModel
+        getallShowtimesForThreatreOnDate(ThreatreId id, Date date) TheatresModel
+        getById(ThreatreId id) TheatresModel
+        getBySlug(String slug) TheatresModel
+        getByNowPlayingReleaseNumber(Int releaseNumber) TheatresModel
+    }
+
+    AMCAPI ..> MoviesEndpoint: contains
+    AMCAPI ..> ShowtimesEndpoint: contains
+    AMCAPI ..> TheatresEndpoint: contains
+    
+    MoviesEndpoint --|> HTTPEndpoint
+    ShowtimesEndpoint --|> HTTPEndpoint
+    TheatresEndpoint --|> HTTPEndpoint
+
+    MoviesTarget --|> HTTPTargetType
+    ShowtimesTarget --|> HTTPTargetType
+    TheatresTarget --|> HTTPTargetType
+
+    MoviesEndpoint ..> MoviesTarget
+    ShowtimesEndpoint ..> ShowtimesTarget
+    TheatresEndpoint ..> TheatresTarget
+```
+
 
 ## AMCAPI Usage
 The API object vended from the library is `AMCAPI`. It is a singleton with functions for setting your authorization key, which you obtain from AMC's developer portal, and for fetching movie, showtime, and theatre information.
