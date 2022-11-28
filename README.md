@@ -24,12 +24,25 @@ classDiagram
 ```
 
 ## APICore Design
+The following diagram shows, at a high level, most of the details with regard to dependency and implementation for the various entities that make up the `APICore` implementation. In order to keep the diagram readable, a fair amount of detail has been left out. See the code for full details. The diagram should help with assimilation the code.
+
 ```mermaid
 classDiagram
+	class HTTPEndpoint {
+		<<protocol>>
+		HTTPTargetType Target: associatedtype
+		Decodable Model: associatedtype
+		
+		request(Target target)
+	}
+
     class AMCAPI {
         <<singleton>>
         String path
         HTTPTask task
+        HTTPEndpoint moviesEndpoint
+        HTTPEndpoint showtimesEndpoint
+        HTTPEndpoint theatresEndpoint
     }
 
 	class HTTPTargetType {
@@ -41,20 +54,6 @@ classDiagram
 		HTTPTask task
 	}
 	
-	class HTTPEndpoint {
-		<<protocol>>
-		HTTPTargetType Target: associatedtype
-		Decodable Model: associatedtype
-		
-		request(Target target)
-	}
-
-    class MoviesEndpoint {
-        <<AMCAPI extension>>
-        Target MoviesTarget
-        Model MoviesModel
-    }
-
     class MoviesTarget {
         <<enum>>
         getAll(Int pageNumber, Int pageSize) MoviesModel
@@ -70,22 +69,10 @@ classDiagram
         getByInternalId(Int id)
     }
 
-    class ShowtimesEndpoint {
-        <<AMCAPI extension>>
-        Target ShowtimesTarget
-        Model ShowtimesModel
-    }
-
     class ShowtimesTarget {
         <<enum>>
         getById(ShowtimeId id) ShowtimesModel
         getByDateAndLocation(Date date, Double latittude, Double longitude, [String : Any]? queryParams) ShowtimesModel
-    }
-
-    class TheatresEndpoint {
-        <<AMCAPI extension>>
-        Target TheatresTarget
-        Model TheatresModel
     }
 
     class TheatresTarget {
@@ -98,23 +85,15 @@ classDiagram
         getByNowPlayingReleaseNumber(Int releaseNumber) TheatresModel
     }
 
-    AMCAPI ..> MoviesEndpoint: contains
-    AMCAPI ..> ShowtimesEndpoint: contains
-    AMCAPI ..> TheatresEndpoint: contains
-    
-    MoviesEndpoint --|> HTTPEndpoint
-    ShowtimesEndpoint --|> HTTPEndpoint
-    TheatresEndpoint --|> HTTPEndpoint
+    AMCAPI --|> HTTPEndpoint: implements
+    AMCAPI ..> MoviesTarget: implements
+    AMCAPI ..> ShowtimesTarget: implements
+    AMCAPI ..> TheatresTarget: implements
 
     MoviesTarget --|> HTTPTargetType
     ShowtimesTarget --|> HTTPTargetType
     TheatresTarget --|> HTTPTargetType
-
-    MoviesEndpoint ..> MoviesTarget
-    ShowtimesEndpoint ..> ShowtimesTarget
-    TheatresEndpoint ..> TheatresTarget
 ```
-
 
 ## AMCAPI Usage
 The API object vended from the library is `AMCAPI`. It is a singleton with functions for setting your authorization key, which you obtain from AMC's developer portal, and for fetching movie, showtime, and theatre information.
