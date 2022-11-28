@@ -15,7 +15,7 @@ From this experience, I decided that I wanted to use as few third-party dependen
 
 For these reasons, I decided to create my own light version of a Moya-type framework for use with URLSession, leaving out Moya and Alamofire, completely. I also kicked Carthage to the curb and went with Swift Package Manager, which was now mature enough to get the job done. Life is much better here. By using Apple's own technology for reactive programming and dependency management. I have a lot less code to keep in sync with Apple. I expect that SPM, Combine, and SwiftUI will continue to improve with time and I anticipate fewer hassles with more capability with each subsequent release of these technologies.
 
-## Domain Model
+## Domain Models
 ```mermaid
 classDiagram
 	MoviesModel "1" *-- "1..*" MovieModel: contains
@@ -28,6 +28,7 @@ The following diagram shows, at a high level, most of the details with regard to
 
 ```mermaid
 classDiagram
+	direction RL
 	class HTTPEndpoint {
 		<<protocol>>
 		HTTPTargetType Target: associatedtype
