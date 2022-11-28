@@ -27,6 +27,10 @@ AMCAPI.shared.setVendorAuthKey(vendorAuthKey)
 I do not validate the value passed into `setVendorAuthKey` and you can call this method as often as you wish to change its value. Passing in a zero length string yields undefined behavior because I haven't tested it. I simply assume you know what you are doing. This may have been a mistake. Time will tell.
 
 ### Fetching Movie Information
+```mermaid
+classDiagram
+	MoviesModel "1" *-- "1..*" MovieModel
+```
 I've distilled AMC's JSON definitions for movie information down into two main `Codable` model structures. These are `MoviesModel` and `MovieModel`. `MoviesModel` is a JSON container for one or more `MovieModel` elements. `MovieModel` is a JSON object that contains all of the properties you might expect when thinking about movie information, including multiple links and URLs to trailer and poster media. For complete details regarding these models, look at the code or visit the [Movies](http://developers.amctheatres.com/Movies) page on AMC's porral. 
 
 #### Fetching Active Movies
