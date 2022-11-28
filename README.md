@@ -15,6 +15,15 @@ From this experience, I decided that I wanted to use as few third-party dependen
 
 For these reasons, I decided to create my own light version of a Moya-type framework for use with URLSession, leaving out Moya and Alamofire, completely. I also kicked Carthage to the curb and went with Swift Package Manager, which was now mature enough to get the job done. Life is much better here. By using Apple's own technology for reactive programming and dependency management. I have a lot less code to keep in sync with Apple. I expect that SPM, Combine, and SwiftUI will continue to improve with time and I anticipate fewer hassles with more capability with each subsequent release of these technologies.
 
+## Domain Model
+
+```mermaid
+classDiagram
+	MoviesModel "1" *-- "1..*" MovieModel: contains
+	ShowtimesModel "1" *-- "1..*" ShowtimeModel: contains
+	TheatresModel "1" *-- "1..*" TheatreModel: contains
+```
+
 ## AMCAPI Usage
 The API object vended from the library is `AMCAPI`. It is a singleton with functions for setting your authorization key, which you obtain from AMC's developer portal, and for fetching movie, showtime, and theatre information.
 ### Setting Your Authorization Key
@@ -27,10 +36,6 @@ AMCAPI.shared.setVendorAuthKey(vendorAuthKey)
 I do not validate the value passed into `setVendorAuthKey` and you can call this method as often as you wish to change its value. Passing in a zero length string yields undefined behavior because I haven't tested it. I simply assume you know what you are doing. This may have been a mistake. Time will tell.
 
 ### Fetching Movie Information
-```mermaid
-classDiagram
-	MoviesModel "1" *-- "1..*" MovieModel
-```
 I've distilled AMC's JSON definitions for movie information down into two main `Codable` model structures. These are `MoviesModel` and `MovieModel`. `MoviesModel` is a JSON container for one or more `MovieModel` elements. `MovieModel` is a JSON object that contains all of the properties you might expect when thinking about movie information, including multiple links and URLs to trailer and poster media. For complete details regarding these models, look at the code or visit the [Movies](http://developers.amctheatres.com/Movies) page on AMC's porral. 
 
 #### Fetching Active Movies
