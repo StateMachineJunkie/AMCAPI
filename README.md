@@ -141,7 +141,7 @@ AMCAPI.shared.fetchAdvanceTicketMovies().sink { [weak self] completion in
 ```
 #### Fetching All Movies
 ```swift
-AMCAPI.sharedFetchAllMovies(pageNumber: Int = 1, pageSize: Int = 10) -> AnyPublisher<MoviesModel, Swift.Error>
+AMCAPI.shared.fetchAllMovies(pageNumber: Int = 1, pageSize: Int = 10) -> AnyPublisher<MoviesModel, Swift.Error>
 ```
 After writing the code for this function, I questioned whether or not it was practical and should be included. My thinking is that the common use case is to get a listing of what is currently active or now playing in the threatre. Why would anyone using a convenience app what to list every single movie in AMC's current database? I don't have an answer for that question. However, the function is here and the results can be accessed in pages, as show in the parameter list for this function.
 
@@ -290,7 +290,7 @@ internal func processPublisherResults<T: Decodable>(_ publisher: URLSession.Data
 ```
 
 ## Final Thoughts
-This is all highly experimental for me. Though I doubt it will be useful for anyone else, I couldn't think of a down-side to putting it up on GitHub. I figure in the worst case, I will get valuable feedback regarding better ways to do what I'm trying to do. On the positive side, maybe this code; this exploration, will inspire or help someone else who is also learning Combine or perhaps is new ti Apple software development and network programming in general.
+This is all highly experimental for me. Though I doubt it will be useful for anyone else, I couldn't think of a down-side to putting it up on GitHub. I figure in the worst case, I will get valuable feedback regarding better ways to do what I'm trying to do. On the positive side, maybe this code; this exploration, will inspire or help someone else who is also learning Combine or perhaps is new to Apple software development and network programming in general.
 
 ## License
 AMCAPI is released under an MIT license. See [License.md](https://github.com/StateMachineJunkie/AMCAPI/blob/main/License.md) for more information.
