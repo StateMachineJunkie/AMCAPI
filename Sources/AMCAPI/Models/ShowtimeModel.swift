@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import os.log
 
 extension AMCAPI {
     /// See the description for `MovieId`.
@@ -164,49 +165,60 @@ extension AMCAPI.ShowtimeModel: Codable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        // Decode built-in and supported types.
-        id                              = try container.decode(AMCAPI.ShowtimeId.self, forKey: .id)
-        performanceNumber               = try container.decode(Int.self, forKey: .performanceNumber)
-        movieId                         = try container.decode(AMCAPI.MovieId.self, forKey: .movieId)
-        movieName                       = try container.decode(String.self, forKey: .movieName)
-        movieURL                        = try container.decode(URL.self, forKey: .movieURL)
-        sortableMovieName               = try container.decode(String.self, forKey: .sortableMovieName)
-        showDateTimeUTC                 = try container.decode(Date.self, forKey: .showDateTimeUTC)
-        showDateTimeLocal               = try container.decode(Date.self, forKey: .showDateTimeLocal)
-        sellUntilDateTimeUTC            = try container.decode(Date.self, forKey: .sellUntilDateTimeUTC)
-        auditorium                      = try container.decode(Int.self, forKey: .auditorium)
-        layoutId                        = try container.decode(Int.self, forKey: .layoutId)
-        layoutVersionNumber             = try container.decode(Int.self, forKey: .layoutVersionNumber)
-        isSoldOut                       = try container.decode(Bool.self, forKey: .isSoldOut)
-        isAlmostSoldOut                 = try container.decode(Bool.self, forKey: .isAlmostSoldOut)
-        isCanceled                      = try container.decode(Bool.self, forKey: .isCanceled)
-        utcOffset                       = try container.decode(String.self, forKey: .utcOffset)
-        purchaseURL                     = try container.decode(URL.self, forKey: .purchaseURL)
-        mobilePurchaseURL               = try container.decode(URL.self, forKey: .mobilePurchaseURL)
-        runTime                         = try container.decodeIfPresent(Int.self, forKey: .runTime)
-        rating                          = try container.decodeIfPresent(AMCAPI.MovieModel.MPAARating.self, forKey: .rating) ?? .unrated
-        premiumFormat                   = try container.decode(String.self, forKey: .premiumFormat)
-        ticketPrices                    = try container.decode([AMCAPI.TicketPriceModel].self, forKey: .ticketPrices)
-        lastUpdatedDateUTC              = try container.decode(Date.self, forKey: .lastUpdatedDateUTC)
-        media                           = try container.decode(Media.self, forKey: .media)
-        isEmbargoed                     = try container.decodeIfPresent(Bool.self, forKey: .isEmbargoed) ?? false
-        isComingSoon                    = try container.decodeIfPresent(Bool.self, forKey: .isComingSoon) ?? false
-        isDiscountMatineePriced         = try container.decodeIfPresent(Bool.self, forKey: .isDiscountMatineePriced) ?? false
-        discountMatineeMessage          = try container.decodeIfPresent(String.self, forKey: .discountMatineeMessage)
-        visibilityDateTimeUTC           = try container.decode(Date.self, forKey: .visibilityDateTimeUTC)
-        maximumIntendedAttendance       = try container.decodeIfPresent(Int.self, forKey: .maximumIntendedAttendance)
-        attributes                      = try container.decode([AMCAPI.AttributeModel].self, forKey: .attributes)
-
-        // Decode user-defined types.
-        if let genreRawValue = try container.decodeIfPresent(String.self, forKey: .genre) {
-            guard let genre = AMCAPI.MovieModel.Genre(rawValueIgnoreCase: genreRawValue) else {
-                throw DecodingError.typeMismatch(AMCAPI.MovieModel.Genre.self,
-                                                 DecodingError.Context(codingPath: [CodingKeys.genre],
-                                                                       debugDescription: "'\(genreRawValue)' is not a valid Genre."))
+        do {
+            // Decode built-in and supported types.
+            id                              = try container.decode(AMCAPI.ShowtimeId.self, forKey: .id)
+            performanceNumber               = try container.decode(Int.self, forKey: .performanceNumber)
+            movieId                         = try container.decode(AMCAPI.MovieId.self, forKey: .movieId)
+            movieName                       = try container.decode(String.self, forKey: .movieName)
+            movieURL                        = try container.decode(URL.self, forKey: .movieURL)
+            sortableMovieName               = try container.decode(String.self, forKey: .sortableMovieName)
+            showDateTimeUTC                 = try container.decode(Date.self, forKey: .showDateTimeUTC)
+            showDateTimeLocal               = try container.decode(Date.self, forKey: .showDateTimeLocal)
+            sellUntilDateTimeUTC            = try container.decode(Date.self, forKey: .sellUntilDateTimeUTC)
+            auditorium                      = try container.decode(Int.self, forKey: .auditorium)
+            layoutId                        = try container.decode(Int.self, forKey: .layoutId)
+            layoutVersionNumber             = try container.decode(Int.self, forKey: .layoutVersionNumber)
+            isSoldOut                       = try container.decode(Bool.self, forKey: .isSoldOut)
+            isAlmostSoldOut                 = try container.decode(Bool.self, forKey: .isAlmostSoldOut)
+            isCanceled                      = try container.decode(Bool.self, forKey: .isCanceled)
+            utcOffset                       = try container.decode(String.self, forKey: .utcOffset)
+            purchaseURL                     = try container.decode(URL.self, forKey: .purchaseURL)
+            mobilePurchaseURL               = try container.decode(URL.self, forKey: .mobilePurchaseURL)
+            runTime                         = try container.decodeIfPresent(Int.self, forKey: .runTime)
+            rating                          = try container.decodeIfPresent(AMCAPI.MovieModel.MPAARating.self, forKey: .rating) ?? .unrated
+            premiumFormat                   = try container.decode(String.self, forKey: .premiumFormat)
+            ticketPrices                    = try container.decode([AMCAPI.TicketPriceModel].self, forKey: .ticketPrices)
+            lastUpdatedDateUTC              = try container.decode(Date.self, forKey: .lastUpdatedDateUTC)
+            media                           = try container.decode(Media.self, forKey: .media)
+            isEmbargoed                     = try container.decodeIfPresent(Bool.self, forKey: .isEmbargoed) ?? false
+            isComingSoon                    = try container.decodeIfPresent(Bool.self, forKey: .isComingSoon) ?? false
+            isDiscountMatineePriced         = try container.decodeIfPresent(Bool.self, forKey: .isDiscountMatineePriced) ?? false
+            discountMatineeMessage          = try container.decodeIfPresent(String.self, forKey: .discountMatineeMessage)
+            visibilityDateTimeUTC           = try container.decode(Date.self, forKey: .visibilityDateTimeUTC)
+            maximumIntendedAttendance       = try container.decodeIfPresent(Int.self, forKey: .maximumIntendedAttendance)
+            attributes                      = try container.decode([AMCAPI.AttributeModel].self, forKey: .attributes)
+            
+            // Decode user-defined types.
+            if let genreRawValue = try container.decodeIfPresent(String.self, forKey: .genre) {
+                if let genre = AMCAPI.MovieModel.Genre(rawValueIgnoreCase: genreRawValue.trimmingCharacters(in: .whitespaces)) {
+                    self.genre = genre
+                } else {
+                    let error = DecodingError.typeMismatch(AMCAPI.MovieModel.Genre.self,
+                                                           DecodingError.Context(codingPath: [CodingKeys.genre],
+                                                                                 debugDescription: "'\(genreRawValue)' is not a valid Genre."))
+                    Logger.logAMCAPIError(error, withInfo: "Unrecognized GENRE (\(genreRawValue)). Marking as unavailable.")
+                    self.genre = .unavailable
+                }
+            } else {
+                self.genre = .unavailable
             }
-            self.genre = genre
-        } else {
-            self.genre = .unavailable
+        } catch let error as DecodingError {
+            Logger.logAMCAPIDecodingError(error)
+            throw error
+        } catch {
+            Logger.logAMCAPIError(error)
+            throw error
         }
     }
 }

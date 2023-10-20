@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import os.log
 
 extension AMCAPI {
     public struct TicketPriceModel: Equatable {
@@ -39,22 +40,32 @@ extension AMCAPI.TicketPriceModel: Codable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        // Decode built-in and supported types.
-        price       = try container.decode(Double.self, forKey: .price)
-        sku         = try container.decode(String.self, forKey: .sku)
-        agePolicy   = try container.decodeIfPresent(String.self, forKey: .agePolicy)
-        tax         = try container.decode(Double.self, forKey: .tax)
+        do {
+            // Decode built-in and supported types.
+            price       = try container.decode(Double.self, forKey: .price)
+            sku         = try container.decode(String.self, forKey: .sku)
+            agePolicy   = try container.decodeIfPresent(String.self, forKey: .agePolicy)
+            tax         = try container.decode(Double.self, forKey: .tax)
 
-        // Decode user-defined types.
-        if let ticketTypeRawValue = try container.decodeIfPresent(String.self, forKey: .type) {
-            guard let ticketType = TicketType(rawValueIgnoreCase: ticketTypeRawValue) else {
-                throw DecodingError.typeMismatch(TicketType.self,
-                                                 DecodingError.Context(codingPath: [CodingKeys.type],
-                                                                       debugDescription: "'\(ticketTypeRawValue)' is not a valid ticket type."))
+            // Decode user-defined types.
+            if let ticketTypeRawValue = try container.decodeIfPresent(String.self, forKey: .type) {
+                guard let ticketType = TicketType(rawValueIgnoreCase: ticketTypeRawValue) else {
+                    let error =  DecodingError.typeMismatch(TicketType.self,
+                                                            DecodingError.Context(codingPath: [CodingKeys.type],
+                                                                                  debugDescription: "'\(ticketTypeRawValue)' is not a valid ticket type."))
+                    Logger.logAMCAPIDecodingError(error)
+                    throw error
+                }
+                self.type = ticketType
+            } else {
+                self.type = .adult
             }
-            self.type = ticketType
-        } else {
-            self.type = .adult
+        } catch let error as DecodingError {
+            Logger.logAMCAPIDecodingError(error)
+            throw error
+        } catch {
+            Logger.logAMCAPIError(error)
+            throw error
         }
     }
 }

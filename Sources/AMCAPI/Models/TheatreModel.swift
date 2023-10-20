@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import os.log
 
 extension AMCAPI {
     /// See the description for `MovieId`.
@@ -157,35 +158,43 @@ extension AMCAPI.TheatreModel: Codable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        // Decode built-in and supported types.
-        id                              = try container.decode(AMCAPI.TheatreId.self, forKey: .id)
-        name                            = try container.decode(String.self, forKey: .name)
-        longName	                    = try container.decode(String.self, forKey: .longName)
-        guestServicesPhoneNumber		= try container.decode(String.self, forKey: .guestServicesPhoneNumber)
-        utcOffset						= try container.decode(String.self, forKey: .utcOffset)
-        timezone						= try container.decode(String.self, forKey: .timezone)
-        slug							= try container.decode(String.self, forKey: .slug)
-        facebookURL						= try container.decodeIfPresent(URL.self, forKey: .facebookURL)
-        outageDescription				= try container.decodeIfPresent(String.self, forKey: .outageDescription)
-        websiteURL						= try container.decodeIfPresent(URL.self, forKey: .websiteURL)
-        loyaltyVersionId				= try container.decode(Int.self, forKey: .loyaltyVersionId)
-        isClosed                        = try container.decodeIfPresent(Bool.self, forKey: .isClosed) ?? false
-        closures						= try container.decode([Closure].self, forKey: .closures)
-        lastBusinessDate				= try container.decodeIfPresent(Date.self, forKey: .lastBusinessDate)
-        ticketable						= try container.decode(String.self, forKey: .ticketable)
-        attributes						= try container.decode([AMCAPI.AttributeModel].self, forKey: .attributes)
-        location						= try container.decode(Location.self, forKey: .location)
-        media							= try container.decode(Media.self, forKey: .media)
-        redemptionMethods				= try container.decode([String].self, forKey: .redemptionMethods)
-        westWorldMediaNumber			= try container.decodeIfPresent(Int.self, forKey: .westWorldMediaNumber)
-        concessionsDeliveryOptions		= try container.decode([ConcessionDeliveryOption].self, forKey: .concessionsDeliveryOptions)
-        convenienceFeeTaxPercent		= try container.decode(Double.self, forKey: .convenienceFeeTaxPercent)
-        convenienceFeeTaxFlatAmount		= try container.decode(Double.self, forKey: .convenienceFeeTaxFlatAmount)
-        brand							= try container.decode(String.self, forKey: .brand)
-        subscriptionUsageLevel			= try container.decode(Int.self, forKey: .subscriptionUsageLevel)
-        onlineConcessions				= try container.decode(Bool.self, forKey: .onlineConcessions)
-        hasMultipleKitchens				= try container.decode(Bool.self, forKey: .hasMultipleKitchens)
-        deliveryToSeat					= try container.decode(Bool.self, forKey: .deliveryToSeat)
+        do {
+            // Decode built-in and supported types.
+            id                              = try container.decode(AMCAPI.TheatreId.self, forKey: .id)
+            name                            = try container.decode(String.self, forKey: .name)
+            longName	                    = try container.decode(String.self, forKey: .longName)
+            guestServicesPhoneNumber		= try container.decode(String.self, forKey: .guestServicesPhoneNumber)
+            utcOffset						= try container.decode(String.self, forKey: .utcOffset)
+            timezone						= try container.decode(String.self, forKey: .timezone)
+            slug							= try container.decode(String.self, forKey: .slug)
+            facebookURL						= try container.decodeIfPresent(URL.self, forKey: .facebookURL)
+            outageDescription				= try container.decodeIfPresent(String.self, forKey: .outageDescription)
+            websiteURL						= try container.decodeIfPresent(URL.self, forKey: .websiteURL)
+            loyaltyVersionId				= try container.decode(Int.self, forKey: .loyaltyVersionId)
+            isClosed                        = try container.decodeIfPresent(Bool.self, forKey: .isClosed) ?? false
+            closures						= try container.decode([Closure].self, forKey: .closures)
+            lastBusinessDate				= try container.decodeIfPresent(Date.self, forKey: .lastBusinessDate)
+            ticketable						= try container.decode(String.self, forKey: .ticketable)
+            attributes						= try container.decode([AMCAPI.AttributeModel].self, forKey: .attributes)
+            location						= try container.decode(Location.self, forKey: .location)
+            media							= try container.decode(Media.self, forKey: .media)
+            redemptionMethods				= try container.decode([String].self, forKey: .redemptionMethods)
+            westWorldMediaNumber			= try container.decodeIfPresent(Int.self, forKey: .westWorldMediaNumber)
+            concessionsDeliveryOptions		= try container.decode([ConcessionDeliveryOption].self, forKey: .concessionsDeliveryOptions)
+            convenienceFeeTaxPercent		= try container.decode(Double.self, forKey: .convenienceFeeTaxPercent)
+            convenienceFeeTaxFlatAmount		= try container.decode(Double.self, forKey: .convenienceFeeTaxFlatAmount)
+            brand							= try container.decode(String.self, forKey: .brand)
+            subscriptionUsageLevel			= try container.decode(Int.self, forKey: .subscriptionUsageLevel)
+            onlineConcessions				= try container.decode(Bool.self, forKey: .onlineConcessions)
+            hasMultipleKitchens				= try container.decode(Bool.self, forKey: .hasMultipleKitchens)
+            deliveryToSeat					= try container.decode(Bool.self, forKey: .deliveryToSeat)
+        } catch let error as DecodingError {
+            Logger.logAMCAPIDecodingError(error)
+            throw error
+        } catch {
+            Logger.logAMCAPIError(error)
+            throw error
+        }
     }
 }
 
@@ -202,9 +211,11 @@ extension AMCAPI.TheatreModel.ConcessionDeliveryOption: Codable {
             let caseFound = Self.allCases.first(where: { $0.rawValue.caseInsensitiveCompare(option) == .orderedSame }) {
             self = caseFound
         } else {
-            throw DecodingError.typeMismatch(AMCAPI.TheatreModel.ConcessionDeliveryOption.self,
-                                             DecodingError.Context(codingPath: [CodingKeys.deliveryToSeat, CodingKeys.expressPickup],
-                                                                   debugDescription: "'Invalid ConcessionDeliveryOption."))
+            let error = DecodingError.typeMismatch(AMCAPI.TheatreModel.ConcessionDeliveryOption.self,
+                                                   DecodingError.Context(codingPath: [CodingKeys.deliveryToSeat, CodingKeys.expressPickup],
+                                                                         debugDescription: "'Invalid ConcessionDeliveryOption."))
+            Logger.logAMCAPIDecodingError(error)
+            throw error
         }
     }
 }

@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import os.log
 
 extension AMCAPI {
     /// Entity identifiers use a common integer type. This is sufficient for
@@ -51,6 +52,7 @@ extension AMCAPI {
             case horror         = "Horror"
             case drama          = "Drama"
             case scienceFiction = "Science Fiction"
+            case renaissance    = "Renaissance"
             case unavailable
         }
 
@@ -212,44 +214,55 @@ extension AMCAPI.MovieModel: Codable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        // Decode built-in and supported types.
-        id                              = try container.decode(AMCAPI.MovieId.self, forKey: .id)
-        name                            = try container.decode(String.self, forKey: .name)
-        sortableName                    = try container.decode(String.self, forKey: .sortableName)
-        starringActors                  = try container.decode(String.self, forKey: .starringActors)
-        directors                       = try container.decode(String.self, forKey: .directors)
-        rating                          = try container.decodeIfPresent(MPAARating.self, forKey: .rating) ?? .unrated
-        releaseNumber                   = try container.decodeIfPresent(Int.self, forKey: .releaseNumber)
-        runTime                         = try container.decodeIfPresent(Int.self, forKey: .runTime)
-        score                           = try container.decode(Double.self, forKey: .score)
-        slug                            = try container.decode(String.self, forKey: .slug)
-        synopsis                        = try container.decodeIfPresent(String.self, forKey: .synopsis)
-        synopsisTagLine                 = try container.decodeIfPresent(String.self, forKey: .synopsisTagLine)
-        releaseDateUTC                  = try container.decode(Date.self, forKey: .releaseDateUTC)
-        earliestShowingUTC              = try container.decodeIfPresent(Date.self, forKey: .earliestShowingUTC)
-        hasScheduledShowtimes           = try container.decode(Bool.self, forKey: .hasScheduledShowtimes)
-        displayOnlineTicketAvailability = try container.decodeIfPresent(Bool.self, forKey: .displayOnlineTicketAvailability)
-        onlineTicketAvailabilityDateUTC = try container.decode(Date.self, forKey: .onlineTicketAvailabilityDateUTC)
-        websiteURL                      = try container.decode(URL.self, forKey: .websiteURL)
-        showtimesURL                    = try container.decode(URL.self, forKey: .showtimesURL)
-        distributorId                   = try container.decodeIfPresent(Int.self, forKey: .distributorId)
-        distributorCode                 = try container.decodeIfPresent(String.self, forKey: .distributorCode)
-        preferredMediaType              = try container.decode(PreferredMediaType.self, forKey: .preferredMediaType)
-        availableForAList               = try container.decode(Bool.self, forKey: .availableForAList)
-        imdbId                          = try container.decodeIfPresent(String.self, forKey: .imdbId)
-        privateTheatreRentalTier        = try container.decodeIfPresent(RentalTier.self, forKey: .privateTheatreRentalTier)
-        media                           = try container.decode(Media.self, forKey: .media)
+        do {
+            // Decode built-in and supported types.
+            id                              = try container.decode(AMCAPI.MovieId.self, forKey: .id)
+            name                            = try container.decode(String.self, forKey: .name)
+            sortableName                    = try container.decode(String.self, forKey: .sortableName)
+            starringActors                  = try container.decode(String.self, forKey: .starringActors)
+            directors                       = try container.decode(String.self, forKey: .directors)
+            rating                          = try container.decodeIfPresent(MPAARating.self, forKey: .rating) ?? .unrated
+            releaseNumber                   = try container.decodeIfPresent(Int.self, forKey: .releaseNumber)
+            runTime                         = try container.decodeIfPresent(Int.self, forKey: .runTime)
+            score                           = try container.decode(Double.self, forKey: .score)
+            slug                            = try container.decode(String.self, forKey: .slug)
+            synopsis                        = try container.decodeIfPresent(String.self, forKey: .synopsis)
+            synopsisTagLine                 = try container.decodeIfPresent(String.self, forKey: .synopsisTagLine)
+            releaseDateUTC                  = try container.decode(Date.self, forKey: .releaseDateUTC)
+            earliestShowingUTC              = try container.decodeIfPresent(Date.self, forKey: .earliestShowingUTC)
+            hasScheduledShowtimes           = try container.decode(Bool.self, forKey: .hasScheduledShowtimes)
+            displayOnlineTicketAvailability = try container.decodeIfPresent(Bool.self, forKey: .displayOnlineTicketAvailability)
+            onlineTicketAvailabilityDateUTC = try container.decode(Date.self, forKey: .onlineTicketAvailabilityDateUTC)
+            websiteURL                      = try container.decode(URL.self, forKey: .websiteURL)
+            showtimesURL                    = try container.decode(URL.self, forKey: .showtimesURL)
+            distributorId                   = try container.decodeIfPresent(Int.self, forKey: .distributorId)
+            distributorCode                 = try container.decodeIfPresent(String.self, forKey: .distributorCode)
+            preferredMediaType              = try container.decode(PreferredMediaType.self, forKey: .preferredMediaType)
+            availableForAList               = try container.decode(Bool.self, forKey: .availableForAList)
+            imdbId                          = try container.decodeIfPresent(String.self, forKey: .imdbId)
+            privateTheatreRentalTier        = try container.decodeIfPresent(RentalTier.self, forKey: .privateTheatreRentalTier)
+            media                           = try container.decode(Media.self, forKey: .media)
 
-        // Decode user-defined types.
-        if let genreRawValue = try container.decodeIfPresent(String.self, forKey: .genre) {
-            guard let genre = Genre(rawValueIgnoreCase: genreRawValue) else {
-                throw DecodingError.typeMismatch(Genre.self,
-                                                 DecodingError.Context(codingPath: [CodingKeys.genre],
-                                                                       debugDescription: "'\(genreRawValue)' is not a valid Genre."))
+            // Decode user-defined types.
+            if let genreRawValue = try container.decodeIfPresent(String.self, forKey: .genre) {
+                if let genre = Genre(rawValueIgnoreCase: genreRawValue.trimmingCharacters(in: .whitespaces)) {
+                    self.genre = genre
+                } else {
+                    let error = DecodingError.typeMismatch(Genre.self,
+                                                           DecodingError.Context(codingPath: [CodingKeys.genre],
+                                                                                 debugDescription: "'\(genreRawValue)' is not a valid Genre."))
+                    Logger.logAMCAPIError(error, withInfo: "Unrecognized GENRE (\(genreRawValue)). Marking as unavailable.")
+                    self.genre = .unavailable
+                }
+            } else {
+                self.genre = .unavailable
             }
-            self.genre = genre
-        } else {
-            self.genre = .unavailable
+        } catch let error as DecodingError {
+            Logger.logAMCAPIDecodingError(error)
+            throw error
+        } catch {
+            Logger.logAMCAPIError(error)
+            throw error
         }
     }
 }
