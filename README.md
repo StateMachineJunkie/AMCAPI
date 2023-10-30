@@ -228,9 +228,9 @@ extension MyAPITarget {
     case let .firstAPICall(arg1, arg2):
       return "/v1/firstAPI/\(arg1)/(arg2)"
     case .secondAPICall:
-      return "/v1/secondAPI
-    case .thirdAPICall:
-      return "/v1/thirdAPI
+      return "/v1/secondAPI"
+    case .thirdNoArgAPICall:
+      return "/v1/thirdAPI"
     }
   }
   
@@ -238,7 +238,7 @@ extension MyAPITarget {
     switch self {
     case .firstAPICall, .secondAPICall:
       return ["key1": "value1", "key2": "\(value2)"]
-    default:
+    default: // .thirdNoArgAPICall
       return ["key3": "\(value3)"]
   }
   
